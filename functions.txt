@@ -1,4 +1,6 @@
 def updateData():
+    ''' This function is used to get the raw-data in JSON format from NSE NIFTY50 Options using it's API and storing it '''
+    
     url='https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY'
     headers={
         'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
@@ -10,24 +12,12 @@ def updateData():
     cookies=dict(request.cookies)
     response=session.get(url,headers=headers,cookies=cookies).json()
     rawdata=pd.DataFrame(response)
+    # The rawdata would have the present day's record as well as future dateabss
     rawop=pd.DataFrame(rawdata['filtered']['data']).fillna(0)
-    return rawop
-
-def updateNifty():
-    urlP='https://www.nseindia.com/api/marketStatus'
-    headersP={
-        'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
-        "accept-encoding" : "gzip, deflate, br",
-        'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8'
-    }
-    sessionP=requests.Session()
-    requestP=sessionP.get(urlP,headers=headersP)
-    cookiesP=dict(requestP.cookies)
-    responseP=sessionP.get(urlP,headers=headersP,cookies=cookiesP).json()
-    rawdataP=pd.DataFrame(responseP)
-    nifty50=rawdataP['marketState'][0]['last']
-    return nifty50
-
+    nifty50cur=rawdata['records']['underlyingValue']
+    # Taking only the present day's data, and returning it
+    return rawop,nifty50cur
+    
 def dataframe(rawop):
     data=[]
     for i in range(0,len(rawop)):
@@ -83,13 +73,12 @@ def appendpcrOI(optionchain):
     return optionchain
 
 def STP_range(optionchain, percent, niftyprice):
-    optionchain=optionchain.T
-    for i in range(0,optionchain.shape[1]-1):
-        if((optionchain.loc['STP'][i]<((100-percent)/100)*niftyprice) & (optionchain.loc['STP'][i+1]>((100-percent)/100)*niftyprice)):
-            min=i
-        if((optionchain.loc['STP'][i]<((100+percent)/100)*niftyprice) & (optionchain.loc['STP'][i+1]>((100+percent)/100)*niftyprice)):
-            max=i
-    range1=[min,max]
+    ''' Gives the STP range for percent above and below niftyprice'''
+    low = niftyprice*(100-percent)/100
+    high = niftyprice*(100+percent)/100
+    min_idx = optionchain['STP'].sub(low).abs().idxmin()
+    max_idx = optionchain['STP'].sub(high).abs().idxmin()
+    range1=[min_idx,max_idx]
     return (range1)
 
 def plotOI(optionchain,per,STPrange):

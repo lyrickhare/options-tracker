@@ -11,7 +11,7 @@ Jupyter notebook has all the codebase and .txt files have segregated code
 
 #pseudo code for main function of python script <br />
 opencsv_(oldOptionData.csv) <br />
-[rawop,nifty50cur] = updateData() #(custom function defined in .ipynb file to import data from nseindia.com/option-chain) <br />
+rawop,nifty50cur = updateData() #(custom function defined in .ipynb file to import data from nseindia.com/option-chain) <br />
 optionchain = dataframe(rawop) #(custom function to filter and reshape the raw data) <br />
 optionchain = appendpcrOI(optionchain) <br />
 optionchain = appendpcrCOI(optionchain) <br />
