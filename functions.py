@@ -21,7 +21,7 @@ def updateData():
     response=session.get(url,headers=headers,cookies=cookies).json()
     rawdata=pd.DataFrame(response)
     # The rawdata would have the present day's record as well as future dateabss
-    rawop=pd.DataFrame(rawdata['filtered']['data']).fillna(0)
+    rawop=pd.DataFrame(rawdata['records']['data']).fillna(0)
     nifty50cur=rawdata['records']['underlyingValue']
     # Taking only the present day's data, and returning it
     return rawop,nifty50cur
